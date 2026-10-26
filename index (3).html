@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Segunda Vida de las Cosas · ODS 12</title>
+
+<style>
+:root{
+  --rosa:#f7c8d0; --rosa-claro:#fde8ec; --menta:#bde3cf; --lavanda:#d9c7f0;
+  --crema:#fffaf3; --texto:#4a3f4d; --texto-suave:#8a7a85; --acento:#e0607f; --verde:#4caf7d;
+  --fondo:#fdf3f0; --font:'Segoe UI',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{color:var(--texto);font-family:var(--font);min-height:100vh;
+  background:radial-gradient(700px 450px at 90% 0%,var(--rosa-claro),transparent 60%),
+             radial-gradient(700px 450px at 10% 100%,var(--menta),transparent 60%),var(--fondo);}
+
+/* BIENVENIDA */
+#bienvenida{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+  background:var(--fondo);transition:opacity .8s ease;}
+#bienvenida.oculta{opacity:0;pointer-events:none}
+.bienvenida-inner{max-width:640px;margin:2rem;text-align:center;padding:3rem 2.5rem;
+  background:rgba(255,250,243,.96);border-radius:28px;border:1px solid rgba(224,96,127,.3);
+  box-shadow:0 20px 60px rgba(224,96,127,.25);}
+.bienvenida-inner .icono{font-size:3.5rem;margin-bottom:.5rem}
+.bienvenida-inner h1{font-size:clamp(1.9rem,5.5vw,3rem);color:var(--acento);font-weight:800;margin-bottom:.6rem;line-height:1.15}
+.bienvenida-inner .badge{display:inline-block;background:var(--rosa-claro);color:var(--acento);
+  padding:.35rem .9rem;border-radius:999px;font-size:.78rem;font-weight:700;margin-bottom:1.2rem}
+.bienvenida-inner p{color:var(--texto-suave);line-height:1.7;font-size:.98rem;margin-bottom:1rem}
+.bienvenida-inner .frase{font-style:italic;color:var(--acento);font-size:1.05rem;margin:1.2rem 0;
+  padding:1.2rem;background:var(--rosa-claro);border-radius:14px;line-height:1.7;font-weight:600}
+.bienvenida-inner button{background:var(--acento);color:#fff;border:none;padding:.9rem 2.4rem;border-radius:999px;
+  font-size:1.05rem;font-weight:700;cursor:pointer;transition:.25s;box-shadow:0 8px 20px rgba(224,96,127,.4);margin-top:.5rem}
+.bienvenida-inner button:hover{transform:translateY(-2px)}
+
+/* CABECERA */
+header{text-align:center;padding:2.5rem 1.5rem 1rem}
+header h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:800;color:var(--texto)}
+header h1 span{color:var(--acento)}
+header p.sub{max-width:620px;margin:.8rem auto 0;color:var(--texto-suave);line-height:1.6;font-size:.92rem}
+
+/* PROGRESO */
+#progreso{max-width:900px;margin:1rem auto;padding:0 1rem}
+.progreso-card{background:rgba(255,250,243,.9);border:1px solid rgba(224,96,127,.3);border-radius:24px;
+  padding:1rem 1.5rem;text-align:center;box-shadow:0 15px 40px rgba(224,96,127,.15)}
+.progreso-titulo{font-size:1.05rem;font-weight:700;color:var(--acento);margin-bottom:.3rem}
+.progreso-sub{font-size:.82rem;color:var(--texto-suave);margin-bottom:.7rem}
+.progreso-barra{height:12px;background:var(--rosa-claro);border-radius:999px;overflow:hidden;margin-bottom:.5rem}
+.progreso-fill{height:100%;background:linear-gradient(90deg,var(--verde),var(--acento));border-radius:999px;transition:width .6s ease}
+.progreso-contador{font-size:.8rem;color:var(--texto-suave);font-weight:600}
+
+/* ESPACIO DE OBJETOS */
+#espacio{max-width:900px;margin:1rem auto;padding:0 1rem}
+.espacio-card{background:rgba(255,250,243,.9);border:1px solid rgba(224,96,127,.3);border-radius:24px;
+  padding:1.5rem;box-shadow:0 15px 40px rgba(224,96,127,.15)}
+.objetos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.8rem}
+.objeto{background:var(--rosa-claro);border:2px solid transparent;border-radius:16px;padding:1rem .6rem;
+  text-align:center;cursor:pointer;transition:.3s ease}
+.objeto:hover{border-color:var(--acento);transform:translateY(-4px);box-shadow:0 10px 24px rgba(224,96,127,.25)}
+.objeto .emoji{font-size:2.4rem;display:block;margin-bottom:.3rem}
+.objeto .nombre{font-size:.8rem;font-weight:700;color:var(--texto)}
+.objeto .estado{font-size:.68rem;color:var(--texto-suave);margin-top:.2rem;font-weight:600}
+.objeto .estado.salvado{color:var(--verde)}
+.objeto .estado.desechado{color:var(--acento)}
+.objeto.salvado{border-color:var(--verde);background:var(--menta)}
+.objeto.desechado{opacity:.55;filter:grayscale(.5)}
+.objeto.desechado .emoji{filter:grayscale(.8)}
+
+/* FICHA */
+#ficha{max-width:900px;margin:1rem auto;padding:0 1rem}
+.ficha-card{background:rgba(255,250,243,.96);border:1px solid rgba(224,96,127,.3);border-radius:24px;
+  padding:2rem;box-shadow:0 15px 40px rgba(224,96,127,.2);text-align:center;animation:aparecer .5s ease}
+.ficha-cabecera{display:flex;align-items:center;justify-content:center;gap:1rem;margin-bottom:1.2rem}
+.ficha-cabecera .ficha-emoji{font-size:3.2rem}
+.ficha-cabecera .ficha-nombre{font-size:1.5rem;font-weight:800;color:var(--acento);text-align:left}
+.ficha-historia{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.5rem;text-align:left}
+.ficha-historia .linea{background:var(--rosa-claro);border-left:5px solid var(--acento);border-radius:10px;
+  padding:.8rem 1rem;font-size:.95rem;line-height:1.6;color:var(--texto)}
+.ficha-historia .linea strong{color:var(--acento);display:block;font-size:.7rem;letter-spacing:.05em;margin-bottom:.2rem}
+.ficha-pregunta{font-size:1.1rem;font-weight:700;color:var(--texto);margin-bottom:1.2rem}
+.ficha-opciones{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem}
+.ficha-opcion{background:var(--crema);border:2px solid var(--lavanda);border-radius:14px;padding:1rem .8rem;
+  cursor:pointer;transition:.25s;text-align:center}
+.ficha-opcion:hover{border-color:var(--acento);transform:translateY(-3px);box-shadow:0 8px 20px rgba(224,96,127,.2)}
+.ficha-opcion .op-emoji{font-size:1.8rem;display:block;margin-bottom:.3rem}
+.ficha-opcion .op-nombre{font-weight:700;color:var(--texto);font-size:.85rem}
+.ficha-opcion .op-desc{font-size:.72rem;color:var(--texto-suave);margin-top:.3rem;line-height:1.4}
+
+/* RESULTADO */
+#resultado{max-width:900px;margin:1rem auto;padding:0 1rem}
+.resultado-card{background:rgba(255,250,243,.96);border:1px solid rgba(224,96,127,.3);border-radius:24px;
+  padding:2rem;text-align:center;box-shadow:0 15px 40px rgba(224,96,127,.15);animation:aparecer .6s ease}
+.resultado-card .res-emoji{font-size:3.5rem;display:block;margin-bottom:.5rem}
+.resultado-card .res-titulo{font-size:1.25rem;font-weight:800;color:var(--acento);margin-bottom:.8rem}
+.resultado-card .res-texto{font-size:.98rem;color:var(--texto);line-height:1.7;margin-bottom:1rem}
+.resultado-card button{background:var(--acento);color:#fff;border:none;padding:.8rem 2.2rem;border-radius:999px;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:.2s}
+.resultado-card button:hover{transform:translateY(-2px)}
+
+/* ESCULTURA */
+#escultura{max-width:900px;margin:1rem auto;padding:0 1rem}
+.escultura-card{background:rgba(255,250,243,.96);border:1px solid rgba(224,96,127,.3);border-radius:24px;
+  padding:2rem;text-align:center;box-shadow:0 15px 40px rgba(224,96,127,.2)}
+.escultura-card .esc-titulo{font-size:1.4rem;font-weight:800;color:var(--acento);margin-bottom:.4rem}
+.escultura-card .esc-sub{color:var(--texto-suave);font-size:.9rem;margin-bottom:1.5rem}
+.esc-seccion{text-align:left;margin-bottom:1.5rem}
+.esc-seccion .esc-seccion-titulo{font-size:.9rem;font-weight:800;color:var(--verde);margin-bottom:.8rem;
+  letter-spacing:.05em;text-transform:uppercase}
+.esc-lienzo{background:radial-gradient(500px 300px at 50% 40%,var(--menta),transparent 60%),var(--crema);
+  border:1px solid rgba(76,175,125,.4);border-radius:18px;padding:1.5rem;min-height:180px;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:1.2rem}
+.esc-pieza{text-align:center;transition:.4s;animation:flotar 5s ease infinite}
+.esc-pieza .pieza-emoji{font-size:2.8rem;display:block}
+.esc-pieza .pieza-nombre{font-size:.68rem;color:var(--texto);font-weight:700;margin-top:.2rem}
+.esc-pieza .pieza-nueva{font-size:.62rem;color:var(--verde);font-weight:700;margin-top:.1rem}
+.esc-pieza:hover{transform:scale(1.2)}
+.esc-seccion.danada .esc-seccion-titulo{color:var(--acento)}
+.esc-lienzo.danado{background:radial-gradient(500px 300px at 50% 40%,rgba(224,96,127,.15),transparent 60%),var(--crema);
+  border:1px solid rgba(224,96,127,.4)}
+.esc-pieza.danada .pieza-emoji{filter:grayscale(.7)}
+.esc-pieza.danada .pieza-dano{font-size:.62rem;color:var(--acento);font-weight:700;margin-top:.1rem}
+.escultura-mensaje{margin-top:1.5rem;font-style:italic;color:var(--texto);font-size:1.1rem;line-height:1.8;
+  padding:1.2rem;background:var(--lavanda);border-radius:14px;font-weight:600}
+.escultura-card .ods{font-size:1.05rem;font-weight:800;color:var(--texto);padding:1rem;background:var(--lavanda);border-radius:14px;margin:1.2rem 0}
+.escultura-card button{background:var(--acento);color:#fff;border:none;padding:.8rem 2rem;border-radius:999px;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:.2s;margin:.4rem}
+.escultura-card button:hover{transform:translateY(-2px)}
+
+/* CONTROLES */
+.controls{display:flex;gap:.6rem;justify-content:center;margin:1.2rem auto;padding:0 1rem;max-width:900px}
+.controls button{background:rgba(255,250,243,.9);border:1px solid rgba(224,96,127,.4);color:var(--texto);
+  padding:.6rem 1.3rem;border-radius:999px;cursor:pointer;font-weight:600;font-size:.85rem;transition:.2s}
+.controls button:hover{background:var(--rosa-claro);transform:translateY(-1px)}
+
+footer{text-align:center;padding:1.5rem 1rem 2.5rem;color:var(--texto-suave);font-size:.78rem;line-height:1.7}
+footer a{color:var(--acento);text-decoration:none}
+
+@keyframes aparecer{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes flotar{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+@media(max-width:600px){
+  .objetos-grid{grid-template-columns:repeat(auto-fill,minmax(95px,1fr))}
+  .ficha-opciones{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+  .ficha-cabecera{flex-direction:column;gap:.4rem}
+  .ficha-cabecera .ficha-nombre{text-align:center}
+}
+
+
+/* MEJORAS EVALUACIÓN 2: diseño adaptable y accesibilidad */
+html{scroll-behavior:smooth}
+button,a,.objeto,.ficha-opcion{touch-action:manipulation}
+button:focus-visible,a:focus-visible,.objeto:focus-visible,.ficha-opcion:focus-visible{outline:3px solid #4caf7d;outline-offset:3px}
+#herramientas{max-width:900px;margin:1rem auto;padding:0 1rem;display:flex;justify-content:center;gap:.7rem;flex-wrap:wrap}
+#herramientas button{border:0;border-radius:999px;padding:.75rem 1.1rem;background:var(--texto);color:white;font-weight:700;cursor:pointer}
+#herramientas button:hover{transform:translateY(-2px)}
+#arte-generativo{max-width:900px;margin:1rem auto;padding:0 1rem}
+.generativo-card{position:relative;overflow:hidden;min-height:125px;border-radius:20px;background:#292538;color:#fff;padding:1.2rem}
+.generativo-card h2{font-size:1rem;position:relative;z-index:2}
+.generativo-card p{font-size:.82rem;opacity:.8;margin-top:.35rem;position:relative;z-index:2}
+#generative-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.85}
+#referencias{max-width:900px;margin:1rem auto;padding:0 1rem}
+.referencias-card{background:rgba(255,250,243,.95);border:1px solid rgba(224,96,127,.3);border-radius:24px;padding:1.5rem;line-height:1.7}
+.referencias-card h2{color:var(--acento);margin-bottom:.6rem}
+.referencias-card ul{padding-left:1.2rem}
+.referencias-card li{margin:.55rem 0;overflow-wrap:anywhere}
+.referencias-card a{color:#287b59;font-weight:650}
+.pie-nota{font-size:.75rem;color:var(--texto-suave);margin-top:1rem}
+#mensaje-aleatorio{max-width:900px;margin:.5rem auto;padding:0 1rem;color:var(--acento);font-weight:700;text-align:center}
+@media(min-width:900px){
+  body:not(.modo-movil) #espacio .objetos-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  body:not(.modo-movil) #espacio .espacio-card{padding:2rem}
+  body:not(.modo-movil) #progreso,#espacio,#ficha,#resultado,#escultura,#arte-generativo,#referencias{max-width:1040px}
+}
+@media(max-width:600px){
+  header{padding:1.5rem .8rem .7rem}
+  #progreso,#espacio,#ficha,#resultado,#escultura,#arte-generativo,#referencias{padding-left:.65rem;padding-right:.65rem}
+  .progreso-card,.espacio-card,.ficha-card,.referencias-card{padding:1rem;border-radius:18px}
+  .objetos-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}
+  .objeto{padding:.85rem .4rem}
+  .objeto .emoji{font-size:2rem}
+  .ficha-opciones{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ficha-opcion{padding:.8rem .5rem}
+  .controls{padding:0 .65rem}
+  .controls button{padding:.65rem .8rem}
+  #herramientas{padding:0 .65rem}
+  #herramientas button{flex:1 1 140px}
+  .bienvenida-inner{margin:1rem;padding:1.6rem 1rem}
+  .bienvenida-inner .badge{font-size:.68rem}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+.azar-sugerido{border-color:var(--verde)!important;box-shadow:0 0 0 3px rgba(76,175,125,.25)}
+</style>
+</head>
+<body>
+
+<div id="bienvenida">
+  <div class="bienvenida-inner">
+    <div class="icono">♻️</div>
+    <h1>La Segunda<br>Vida de las Cosas</h1>
+    <span class="badge">ODS 12 · PRODUCCIÓN Y CONSUMO RESPONSABLES</span>
+    <p><strong>Todo objeto tiene una vida, una muerte… y la posibilidad de renacer.</strong></p>
+    <div class="frase">"No todo lo que deja de servirte<br>ha dejado de servir."</div>
+    <button id="btnComenzar">Conocer los objetos →</button>
+  </div>
+</div>
+
+<header>
+  <h1>La Segunda <span>Vida</span> de las Cosas</h1>
+  <p class="sub">Cada objeto tiene una historia. Tú decides su destino y construyes una escultura digital colectiva.</p>
+</header>
+
+<section id="progreso">
+  <div class="progreso-card">
+    <div class="progreso-titulo" id="progresoTitulo">Explora los objetos abandonados</div>
+    <div class="progreso-sub">Toca un objeto para conocer su historia y decidir su destino.</div>
+    <div class="progreso-barra"><div class="progreso-fill" id="progresoFill" style="width:0%"></div></div>
+    <div class="progreso-contador" id="progresoContador">0 salvados · 0 desechados</div>
+  </div>
+</section>
+
+<section id="espacio">
+  <div class="espacio-card">
+    <div class="objetos-grid" id="objetosGrid"></div>
+  </div>
+</section>
+
+<section id="ficha"></section>
+<section id="resultado"></section>
+<section id="escultura"></section>
+<section id="arte-generativo" aria-label="Arte generativo">
+  <div class="generativo-card">
+    <canvas id="generative-canvas" aria-hidden="true"></canvas>
+    <h2>Materia en movimiento</h2>
+    <p>Una composición generativa: cada partícula representa la posibilidad de transformar lo que descartamos.</p>
+  </div>
+</section>
+<div id="mensaje-aleatorio" aria-live="polite"></div>
+<section id="referencias">
+  <div class="referencias-card">
+    <h2>Referencias y recursos</h2>
+    <p>Fuentes para profundizar en el consumo responsable y las herramientas utilizadas en este prototipo:</p>
+    <ul>
+      <li><a href="https://www.un.org/sustainabledevelopment/es/sustainable-consumption-production/" target="_blank" rel="noopener noreferrer">Naciones Unidas — Producción y consumo responsables (ODS 12)</a>. Información general sobre el objetivo y sus metas.</li>
+      <li><a href="https://www.un.org/sustainabledevelopment/es/2015/09/la-asamblea-general-adopta-la-agenda-2030-para-el-desarrollo-sostenible/" target="_blank" rel="noopener noreferrer">Naciones Unidas — Agenda 2030 para el Desarrollo Sostenible</a>. Contexto del marco global de sostenibilidad.</li>
+      <li><a href="https://p5js.org/reference/" target="_blank" rel="noopener noreferrer">p5.js — Referencia oficial</a>. Documentación para crear dibujos, animaciones y arte generativo mediante código.</li>
+      <li><a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a> y <a href="https://docs.github.com/pages" target="_blank" rel="noopener noreferrer">GitHub Pages</a>. Repositorio de código y publicación del sitio.</li>
+    </ul>
+    <p class="pie-nota">Las historias de los objetos son escenarios educativos ilustrativos. Los tiempos de degradación pueden variar según los materiales y las condiciones ambientales.</p>
+  </div>
+</section>
+
+<div id="herramientas">
+  <button type="button" id="btnAleatorio">🎲 Sugerencia aleatoria</button>
+  <button type="button" id="btnModo">Cambiar modo de vista</button>
+</div>
+<div class="controls">
+  <button id="btnReiniciar">🔄 Nueva experiencia</button>
+</div>
+
+<footer>
+  <p>Prototipo interactivo · <strong>Programación para Artistas I</strong> · Artes Plásticas.<br>
+  Basada en la <a href="https://www.un.org/sustainabledevelopment/es/2015/09/la-asamblea-general-adopta-la-agenda-2030-para-el-desarrollo-sostenible/" target="_blank" rel="noopener">Agenda 2030 para el Desarrollo Sostenible</a> de la ONU (2015).</p>
+</footer>
+
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js" defer></script>
+<script>
+/* ======== DATOS ======== */
+const objetos = [
+  {id:'camiseta', emoji:'👕', nombre:'Camiseta',
+   historia:[{t:'Su origen',x:'Fue comprada hace 8 meses en una tienda de ropa.'},
+             {t:'Su vida',x:'Fue utilizada 12 veces en diferentes ocasiones.'},
+             {t:'Su presente',x:'Ahora está olvidada en un armario, sin uso.'}],
+   destinos:{
+     desechar:{e:'🗑️',t:'Terminó en un basurero',x:'Una camiseta que pudo servir se convirtió en una montaña de residuos. La tela tardará décadas en degradarse.'},
+     reciclar:{e:'🧵',t:'Se convirtió en materia prima',x:'Su tela fue triturada y transformada en nuevas fibras. De una camiseta nacerán otras prendas.'},
+     reutilizar:{e:'👜',t:'Se convirtió en una bolsa',x:'La camiseta fue cosida y transformada en una bolsa reutilizable. Ahora acompaña cada compra.'},
+     reparar:{e:'🧷',t:'Prolongó su vida',x:'Una costura, un botón nuevo. La camiseta volvió a tu armario, lista para 100 usos más.'},
+     intercambiar:{e:'🤝',t:'Pasó a otra persona',x:'La camiseta encontró un nuevo dueño que la valora.'}},
+   nuevoEmoji:'👜', nuevoNombre:'Bolsa',
+   danoEmoji:'🌫️', danoTexto:'Plástico y tela que tardan décadas en degradarse'},
+
+  {id:'celular', emoji:'📱', nombre:'Celular',
+   historia:[{t:'Su origen',x:'Fue comprado hace 3 años como regalo de cumpleaños.'},
+             {t:'Su vida',x:'Guardó miles de recuerdos y acompañó cada día.'},
+             {t:'Su presente',x:'Ahora su batería ya no dura y está guardado en un cajón.'}],
+   destinos:{
+     desechar:{e:'🗑️',t:'Terminó en un basurero',x:'Un celular contiene metales y materiales tóxicos. Desechado, contamina el suelo y el agua durante siglos.'},
+     reciclar:{e:'♻️',t:'Se convirtió en materia prima',x:'Sus metales fueron recuperados: oro, cobre, litio. Estos materiales volverán a la industria.'},
+     reutilizar:{e:'🖼️',t:'Se convirtió en marco digital',x:'Su pantalla fue reutilizada como marco de fotos. Los recuerdos que guardó siguen vivos.'},
+     reparar:{e:'🔧',t:'Prolongó su vida',x:'Una batería nueva le dio años más de vida. No necesitabas uno nuevo, solo repararlo.'},
+     intercambiar:{e:'🤝',t:'Pasó a otra persona',x:'Alguien que no podía comprar uno nuevo recibió tu celular.'}},
+   nuevoEmoji:'🖼️', nuevoNombre:'Marco digital',
+   danoEmoji:'☠️', danoTexto:'Metales tóxicos que contaminan suelo y agua'},
+
+  {id:'botella', emoji:'🥤', nombre:'Botella',
+   historia:[{t:'Su origen',x:'Fue comprada hace 2 semanas en una tienda de conveniencia.'},
+             {t:'Su vida',x:'Contuvo una bebida durante 10 minutos.'},
+             {t:'Su presente',x:'Ahora está vacía, a punto de ser desechada.'}],
+   destinos:{
+     desechar:{e:'🗑️',t:'Terminó en un basurero',x:'Una botella plástica tarda hasta 500 años en degradarse. Esta se suma a millones.'},
+     reciclar:{e:'♻️',t:'Se convirtió en materia prima',x:'El plástico fue fundido y transformado en nuevas fibras. De esta botella nacerá una prenda.'},
+     reutilizar:{e:'🪴',t:'Se convirtió en una maceta',x:'Con tierra y una semilla, la botella se convirtió en hogar de una nueva planta.'},
+     reparar:{e:'🔧',t:'Prolongó su vida',x:'Limpia y reutilizable, la botella acompañará tus días durante meses.'},
+     intercambiar:{e:'🤝',t:'Pasó a otra persona',x:'Alguien la reutilizó como recipiente.'}},
+   nuevoEmoji:'🪴', nuevoNombre:'Maceta',
+   danoEmoji:'🌊', danoTexto:'Plástico que tarda hasta 500 años en degradarse'},
+
+  {id:'silla', emoji:'🪑', nombre:'Silla',
+   historia:[{t:'Su origen',x:'Fue comprada hace 10 años para el comedor.'},
+             {t:'Su vida',x:'Soportó miles de horas de descanso y reuniones.'},
+             {t:'Su presente',x:'Ahora tiene una pata floja y está guardada en el sótano.'}],
+   destinos:{
+     desechar:{e:'🗑️',t:'Terminó en un basurero',x:'Una silla de madera que pudo repararse terminó en la basura. Su madera tardará años en descomponerse.'},
+     reciclar:{e:'🪵',t:'Se convirtió en materia prima',x:'Su madera fue reciclada para crear nuevos muebles. La silla vive en otros objetos.'},
+     reutilizar:{e:'🪴',t:'Se convirtió en un macetero',x:'Su asiento fue vaciado y se convirtió en un jardín vertical. La silla ahora sostiene vida.'},
+     reparar:{e:'🔧',t:'Prolongó su vida',x:'Un tornillo, una gota de pegamento. La silla volvió a tu comedor, firme como siempre.'},
+     intercambiar:{e:'🤝',t:'Pasó a otra persona',x:'Alguien la reparó y le dio un nuevo hogar.'}},
+   nuevoEmoji:'🪴', nuevoNombre:'Jardín vertical',
+   danoEmoji:'🪵', danoTexto:'Madera que tarda años en descomponerse'},
+
+  {id:'tenis', emoji:'👟', nombre:'Tenis',
+   historia:[{t:'Su origen',x:'Fueron comprados hace 2 años para correr.'},
+             {t:'Su vida',x:'Recorrieron cientos de kilómetros en caminatas y carreras.'},
+             {t:'Su presente',x:'Ahora tienen la suela desgastada y están en el clóset.'}],
+   destinos:{
+     desechar:{e:'🗑️',t:'Terminaron en un basurero',x:'Unos tenis que acompañaron tus caminatas terminaron en la basura. Su goma durará siglos.'},
+     reciclar:{e:'♻️',t:'Se convirtieron en materia prima',x:'Su goma fue reciclada para crear superficies de parques infantiles.'},
+     reutilizar:{e:'🪴',t:'Se convirtieron en macetas',x:'Cada tenis se convirtió en una maceta colgante. Tus pasos ahora sostienen plantas.'},
+     reparar:{e:'🔧',t:'Prolongaron su vida',x:'Una suela nueva les dio cientos de kilómetros más.'},
+     intercambiar:{e:'🤝',t:'Pasaron a otra persona',x:'Alguien que los necesita los recibió.'}},
+   nuevoEmoji:'🪴', nuevoNombre:'Macetas',
+   danoEmoji:'🛢️', danoTexto:'Goma y plástico que duran siglos'},
+
+  {id:'caja', emoji:'📦', nombre:'Caja',
+   historia:[{t:'Su origen',x:'Llegó con una compra hace 1 año.'},
+             {t:'Su vida',x:'Protegió lo que contenía durante su viaje.'},
+             {t:'Su presente',x:'Ahora está aplastada en un rincón del cuarto.'}],
+   destinos:{
+     desechar:{e:'🗑️',t:'Terminó en un basurero',x:'Una caja de cartón que pudo reciclarse terminó en la basura. Su fibra se desperdició.'},
+     reciclar:{e:'♻️',t:'Se convirtió en materia prima',x:'Su cartón fue reciclado para crear nuevas cajas. La caja vive en otros empaques.'},
+     reutilizar:{e:'🧸',t:'Se convirtió en una casa de juguete',x:'Con un poco de imaginación, la caja se convirtió en una casa para juguetes.'},
+     reparar:{e:'📦',t:'Prolongó su vida',x:'Reforzada con cinta, la caja sirve para guardar y mudar.'},
+     intercambiar:{e:'🤝',t:'Pasó a otra persona',x:'Alguien la usó para empacar y mudarse.'}},
+   nuevoEmoji:'🧸', nuevoNombre:'Casa de juguete',
+   danoEmoji:'📄', danoTexto:'Cartón desperdiciado que pudo reciclarse'},
+
+  {id:'computadora', emoji:'💻', nombre:'Computadora',
+   historia:[{t:'Su origen',x:'Fue comprada hace 6 años para estudiar.'},
+             {t:'Su vida',x:'Procesó miles de tareas, trabajos y proyectos.'},
+             {t:'Su presente',x:'Ahora es lenta y está guardada sin uso.'}],
+   destinos:{
+     desechar:{e:'🗑️',t:'Terminó en un basurero',x:'Una computadora contiene metales pesados y materiales tóxicos. Desechada, contamina el ambiente.'},
+     reciclar:{e:'♻️',t:'Se convirtió en materia prima',x:'Sus componentes fueron desmontados y sus metales recuperados para nuevas tecnologías.'},
+     reutilizar:{e:'🖥️',t:'Se convirtió en un servidor',x:'Con un sistema ligero, la computadora se convirtió en servidor para proyectos educativos.'},
+     reparar:{e:'🔧',t:'Prolongó su vida',x:'Un disco nuevo y más memoria le dieron años más de vida.'},
+     intercambiar:{e:'🤝',t:'Pasó a otra persona',x:'Alguien que no podía comprar una computadora recibió la tuya.'}},
+   nuevoEmoji:'🖥️', nuevoNombre:'Servidor educativo',
+   danoEmoji:'☠️', danoTexto:'Metales pesados y materiales tóxicos'}
+];
+
+/* ======== ESTADO ======== */
+let fase = 'explorando';
+let decisiones = {};
+
+const $ = id => document.getElementById(id);
+const objetosGrid = $('objetosGrid');
+const fichaSection = $('ficha');
+const resultadoSection = $('resultado');
+const esculturaSection = $('escultura');
+
+/* ======== CONSTRUIR OBJETOS ======== */
+function construirObjetos(){
+  objetosGrid.innerHTML = '';
+  objetos.forEach(o=>{
+    const div = document.createElement('div');
+    div.className = 'objeto' + (o.salvado ? ' salvado' : '') + (o.desechado ? ' desechado' : '');
+    div.id = 'obj-' + o.id;
+    const estado = o.salvado ? 'Salvado' : (o.desechado ? 'Desechado' : 'Abandonado');
+    const clase = o.salvado ? 'salvado' : (o.desechado ? 'desechado' : '');
+    div.innerHTML = '<span class="emoji">' + o.emoji + '</span>' +
+                    '<span class="nombre">' + o.nombre + '</span>' +
+                    '<span class="estado ' + clase + '">' + estado + '</span>';
+    div.addEventListener('click', function(){
+      if(fase === 'explorando' && !o.desechado){
+        abrirFicha(o);
+      }
+    });
+    objetosGrid.appendChild(div);
+  });
+}
+
+/* ======== PROGRESO ======== */
+function actualizarProgreso(){
+  const total = objetos.length;
+  const salvadosN = objetos.filter(o=>o.salvado).length;
+  const desechadosN = objetos.filter(o=>o.desechado).length;
+  const procesados = salvadosN + desechadosN;
+  const porcentaje = Math.round((procesados/total)*100);
+  $('progresoFill').style.width = porcentaje + '%';
+  $('progresoContador').textContent = salvadosN + ' salvados · ' + desechadosN + ' desechados';
+  if(procesados === total){
+    $('progresoTitulo').textContent = 'Todos los objetos tienen un destino';
+  } else {
+    $('progresoTitulo').textContent = 'Explora los objetos abandonados';
+  }
+}
+
+/* ======== ABRIR FICHA ======== */
+function abrirFicha(o){
+  fase = 'ficha';
+  resultadoSection.innerHTML = '';
+  esculturaSection.innerHTML = '';
+
+  const opciones = [
+    {k:'desechar', e:'🗑️', n:'Desechar', d:'Termina en un basurero'},
+    {k:'reciclar', e:'♻️', n:'Reciclar', d:'Se convierte en materia prima'},
+    {k:'reutilizar', e:'🔄', n:'Reutilizar', d:'Adquiere una nueva función'},
+    {k:'reparar', e:'🔧', n:'Reparar', d:'Prolonga su vida'},
+    {k:'intercambiar', e:'🤝', n:'Intercambiar', d:'Pasa a otra persona'}
+  ];
+
+  let historiaHTML = '';
+  o.historia.forEach(h=>{
+    historiaHTML += '<div class="linea"><strong>' + h.t + '</strong>' + h.x + '</div>';
+  });
+
+  let opcionesHTML = '';
+  opciones.forEach(op=>{
+    opcionesHTML += '<div class="ficha-opcion" data-opcion="' + op.k + '">' +
+      '<span class="op-emoji">' + op.e + '</span>' +
+      '<span class="op-nombre">' + op.n + '</span>' +
+      '<span class="op-desc">' + op.d + '</span></div>';
+  });
+
+  fichaSection.innerHTML =
+    '<div class="ficha-card">' +
+      '<div class="ficha-cabecera">' +
+        '<span class="ficha-emoji">' + o.emoji + '</span>' +
+        '<div class="ficha-nombre">' + o.nombre + '</div>' +
+      '</div>' +
+      '<div class="ficha-historia">' + historiaHTML + '</div>' +
+      '<div class="ficha-pregunta">¿Qué decides hacer con este objeto?</div>' +
+      '<div class="ficha-opciones">' + opcionesHTML + '</div>' +
+    '</div>';
+
+  ficha.que = o;
+  fichaSection.querySelectorAll('.ficha-opcion').forEach(op=>{
+    op.addEventListener('click', function(){
+      aplicarDecision(o, op.dataset.opcion);
+    });
+  });
+
+  fichaSection.scrollIntoView({behavior:'smooth'});
+}
+
+/* ======== APLICAR DECISIÓN ======== */
+function aplicarDecision(o, decision){
+  const destino = o.destinos[decision];
+  if(!destino) return;
+
+  decisiones[o.id] = decision;
+
+  if(decision === 'desechar'){
+    o.desechado = true;
+    o.salvado = false;
+  } else {
+    o.salvado = true;
+    o.desechado = false;
+  }
+
+  construirObjetos();
+  actualizarProgreso();
+
+  fase = 'resultado';
+  fichaSection.innerHTML = '';
+  resultadoSection.innerHTML =
+    '<div class="resultado-card">' +
+      '<span class="res-emoji">' + destino.e + '</span>' +
+      '<div class="res-titulo">' + destino.t + '</div>' +
+      '<div class="res-texto">' + destino.x + '</div>' +
+      '<button id="btnSiguiente">Continuar →</button>' +
+    '</div>';
+
+  $('btnSiguiente').addEventListener('click', function(){
+    resultadoSection.innerHTML = '';
+    fase = 'explorando';
+    if(objetos.filter(o=>o.salvado || o.desechado).length === objetos.length){
+      mostrarEscultura();
+    }
+  });
+  resultadoSection.scrollIntoView({behavior:'smooth'});
+}
+
+/* ======== ESCULTURA ======== */
+function mostrarEscultura(){
+  fase = 'escultura';
+  const salvadosObjetos = objetos.filter(o=>o.salvado);
+  const desechadosObjetos = objetos.filter(o=>o.desechado);
+
+  let piezasSalvadas = '';
+  if(salvadosObjetos.length > 0){
+    salvadosObjetos.forEach(o=>{
+      piezasSalvadas += '<div class="esc-pieza" title="' + o.nombre + '">' +
+        '<span class="pieza-emoji">' + o.nuevoEmoji + '</span>' +
+        '<span class="pieza-nombre">' + o.nombre + '</span>' +
+        '<span class="pieza-nueva">→ ' + o.nuevoNombre + '</span>' +
+      '</div>';
+    });
+  } else {
+    piezasSalvadas = '<p style="color:var(--texto-suave);font-size:.9rem;width:100%">No salvaste ningún objeto.</p>';
+  }
+
+  let piezasDesechadas = '';
+  if(desechadosObjetos.length > 0){
+    desechadosObjetos.forEach(o=>{
+      piezasDesechadas += '<div class="esc-pieza danada" title="' + o.nombre + '">' +
+        '<span class="pieza-emoji">' + o.danoEmoji + '</span>' +
+        '<span class="pieza-nombre">' + o.nombre + '</span>' +
+        '<span class="pieza-dano">' + o.danoTexto + '</span>' +
+      '</div>';
+    });
+  } else {
+    piezasDesechadas = '<p style="color:var(--texto-suave);font-size:.9rem;width:100%">No desechaste ningún objeto. 🌱</p>';
+  }
+
+  esculturaSection.innerHTML =
+    '<div class="escultura-card">' +
+      '<div class="esc-titulo">Escultura Digital Colectiva</div>' +
+      '<div class="esc-sub">Lo que salvaste se transformó… lo que desechaste dejó una huella.</div>' +
+
+      '<div class="esc-seccion">' +
+        '<div class="esc-seccion-titulo">🌱 Salvados — ¿en qué se convirtieron?</div>' +
+        '<div class="esc-lienzo">' + piezasSalvadas + '</div>' +
+      '</div>' +
+
+      '<div class="esc-seccion danada">' +
+        '<div class="esc-seccion-titulo">⚠️ Desechados — ¿qué daño dejaron?</div>' +
+        '<div class="esc-lienzo danado">' + piezasDesechadas + '</div>' +
+      '</div>' +
+
+      '<div class="escultura-mensaje">"No todo lo que deja de servirte<br>ha dejado de servir."</div>' +
+      '<div class="ods">ODS 12 — Producir y consumir responsablemente también significa aprender a dar una segunda vida.</div>' +
+      '<button id="btnReiniciarEscultura">🔄 Nueva experiencia</button>' +
+    '</div>';
+
+  $('btnReiniciarEscultura').addEventListener('click', reiniciar);
+  esculturaSection.scrollIntoView({behavior:'smooth'});
+}
+
+/* ======== REINICIAR ======== */
+function reiniciar(){
+  objetos.forEach(o=>{
+    o.salvado = false;
+    o.desechado = false;
+  });
+  decisiones = {};
+  fase = 'explorando';
+  fichaSection.innerHTML = '';
+  resultadoSection.innerHTML = '';
+  esculturaSection.innerHTML = '';
+  construirObjetos();
+  actualizarProgreso();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ======== INICIAR ======== */
+$('btnComenzar').addEventListener('click', function(){
+  $('bienvenida').classList.add('oculta');
+  construirObjetos();
+  actualizarProgreso();
+});
+
+$('btnReiniciar').addEventListener('click', reiniciar);
+
+construirObjetos();
+
+
+/* ===== MEJORAS EVALUACIÓN 2 ===== */
+document.getElementById('btnAleatorio').addEventListener('click', function(){
+  const pendientes = objetos.filter(o => !o.salvado && !o.desechado);
+  if(!pendientes.length){
+    document.getElementById('mensaje-aleatorio').textContent = 'Ya exploraste todos los objetos. Reinicia para crear otra experiencia.';
+    return;
+  }
+  const objeto = pendientes[Math.floor(Math.random() * pendientes.length)];
+  const opciones = ['reciclar','reutilizar','reparar','intercambiar','desechar'];
+  const decision = opciones[Math.floor(Math.random() * opciones.length)];
+  document.getElementById('mensaje-aleatorio').textContent = 'El azar eligió: ' + objeto.nombre + ' · decisión: ' + decision + '.';
+  abrirFicha(objeto);
+  window.setTimeout(() => {
+    const opcion = fichaSection.querySelector('[data-opcion="' + decision + '"]');
+    if(opcion) opcion.classList.add('azar-sugerido');
+    fichaSection.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 80);
+});
+document.getElementById('btnModo').addEventListener('click', function(){
+  document.body.classList.toggle('modo-movil');
+  const movil = document.body.classList.contains('modo-movil');
+  this.textContent = movil ? 'Vista compacta activada ✓' : 'Cambiar modo de vista';
+});
+/* Animación generativa inspirada en arte algorítmico; funciona sin p5.js también. */
+(function iniciarArteGenerativo(){
+  const canvas = document.getElementById('generative-canvas');
+  const ctx = canvas.getContext('2d');
+  const host = canvas.parentElement;
+  let w=0,h=0,particulas=[];
+  function ajustar(){
+    const rect=host.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    w=rect.width; h=rect.height;
+    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);
+    canvas.style.width=w+'px'; canvas.style.height=h+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    particulas=Array.from({length:Math.min(70,Math.floor(w/9))},()=>({
+      x:Math.random()*w,y:Math.random()*h,
+      r:1+Math.random()*3, vx:(Math.random()-.5)*.45,vy:(Math.random()-.5)*.45,
+      tono:Math.random()>.5?'190,227,207':'247,200,208'
+    }));
+  }
+  function dibujar(){
+    ctx.clearRect(0,0,w,h);
+    for(let i=0;i<particulas.length;i++){
+      const p=particulas[i]; p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba('+p.tono+',.8)';ctx.fill();
+      for(let j=i+1;j<particulas.length;j++){
+        const q=particulas[j],dx=p.x-q.x,dy=p.y-q.y,dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<75){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+          ctx.strokeStyle='rgba(255,250,243,'+(1-dist/75)*.18+')';ctx.stroke();}
+      }
+    }
+    requestAnimationFrame(dibujar);
+  }
+  ajustar();window.addEventListener('resize',ajustar);dibujar();
+})();
+
+</script>
+</body>
+</html>
